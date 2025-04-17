@@ -2,10 +2,12 @@ package org.example.register;
 
 import org.example.User;
 import org.example.UserRepository;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/register")
@@ -22,16 +24,27 @@ public class RegisterController {
     }
 
     @PutMapping
-    User newUser(@RequestBody User newUser ){
+    public ResponseEntity<?> newUser(@RequestBody User newUser ){
         try{
             User user = registerService.registerUser(newUser);
             System.out.println("newuser created lol  "+newUser);
-            return repository.save(newUser);
+            return ResponseEntity.ok(repository.save(user));
         }
         catch(Exception e){
             System.out.println("ERROR ERROR:   " + e);
-        }
 
-        return null;
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Conflict");
+            errorResponse.put("message", "User already exists or violates unique constraints");
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(errorResponse);
+        }
+    }
+
+    @GetMapping
+    String Message(){
+        return "register page ";
     }
 }
